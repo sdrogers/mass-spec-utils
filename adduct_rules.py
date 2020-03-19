@@ -30,6 +30,8 @@ adduct_rules = {
                           (Formula('NH4').isotope.mass - ELECTRON_MASS),
         'charge': 2
     },
+
+    # -ve from this point
     '[M-H]-': {
         'mass_transform': -(Formula('H').isotope.mass - ELECTRON_MASS),
         'charge': -1
