@@ -44,9 +44,28 @@ def mass2ion(mass,adduct_name):
 def ion2mass(ion_mass,adduct_name):
     return ion_mass * abs(adduct_rules[adduct_name]['charge']) - adduct_rules[adduct_name]['mass_transform']
 
+def get_transform_list():
+    return list(adduct_rules.keys())
+
+def get_positive_transform_list():
+    return [a for a,v in adduct_rules.items() if v['charge'] > 0]
+
+def get_negative_transform_list():
+    return [a for a,v in adduct_rules.items() if v['charge'] < 0]
 
 if __name__ == '__main__':
     print("E mass: ",ELECTRON_MASS)
+
+    a_list = get_positive_transform_list()
+    print("Positive transformations:")
+    for a in a_list:
+        print(a)
+
+    a_list = get_negative_transform_list()
+    print("Negative transformations:")
+    for a in a_list:
+        print(a)
+
     for adduct in adduct_rules:
         print()
         print("Transform 100 with {}: {}".format(adduct,mass2ion(100,adduct)))
