@@ -48,10 +48,34 @@ adduct_rules = {
 
 }
 
+class Adduct(object):
+    def __init__(self,name):
+        self.name = name
+        self.synonyms = {}
+    
+    def add_synonym(self,dialect,name):
+        self.synonyms[dialect] = name
+
+    def __str__(self):
+        return self.name + "  (" + ", ".join(["{}:{}".format(k,v) for k,v in self.synonyms.items()]) + ")"
+
+class AdductThesaurus(object):
+    def __init__(self):
+        self.adduct_dict = {}
+    def add_adduct(self,adduct):
+        self.adduct_dict[adduct.name] = adduct
+    def get_standard_name(self,name,dialect):
+        for main_name,adduct in self.adduct_dict.items():
+            local_name = adduct.synonyms.get(dialect,None)
+            if local_name == name:
+                return main_name
+        return None
+
+
 
 class AdductTransformer(object):
     def __init__(self):
-        self.adduct_thes = parse_csv()
+        self.adduct_thes = self.parse_csv()
     
     def mass2ion(self,mass,adduct_name,dialect = None):
         if not dialect is None:
@@ -64,12 +88,32 @@ class AdductTransformer(object):
         params = adduct_string_parser(adduct_string)
         return (mass*params[0] + params[1])/abs(params[2])
     
+    def get_transform_list(self):
+        return list(self.adduct_thes.keys())
 
-def mass2ion(mass,adduct_name,dialect = None):
-    return (mass + adduct_rules[adduct_name]['mass_transform'])/abs(adduct_rules[adduct_name]['charge'])
+    def _parse_csv(self,filename = 'Adduct definitions and synonyms - positive adducts.csv'):
+        import csv
 
-def ion2mass(ion_mass,adduct_name):
-    return ion_mass * abs(adduct_rules[adduct_name]['charge']) - adduct_rules[adduct_name]['mass_transform']
+        adduct_thes = AdductThesaurus()
+
+        with open(filename,'r') as f:
+            reader = csv.reader(f)
+            top_heads = next(reader)
+            main_heads = next(reader)
+            dialect_pos = range(5,17)
+            for line in reader:
+                if len(line[0]) == 0:
+                    continue # no main name
+                new_adduct = Adduct(line[0])
+                for dpos in dialect_pos:
+                    if len(line[dpos]) > 0:
+                        new_adduct.add_synonym(main_heads[dpos],line[dpos])
+                adduct_thes.add_adduct(new_adduct)
+        
+        return adduct_thes
+
+    
+# obsolete methods - for deletion
 
 def get_transform_list():
     return list(adduct_rules.keys())
@@ -156,50 +200,6 @@ def adduct_string_parser(adduct_string):
     mass_shift -= charge*ELECTRON_MASS
 
     return (mass_multiplier,mass_shift,charge)    
-
-class Adduct(object):
-    def __init__(self,name):
-        self.name = name
-        self.synonyms = {}
-    
-    def add_synonym(self,dialect,name):
-        self.synonyms[dialect] = name
-
-    def __str__(self):
-        return self.name + "  (" + ", ".join(["{}:{}".format(k,v) for k,v in self.synonyms.items()]) + ")"
-
-class AdductThesaurus(object):
-    def __init__(self):
-        self.adduct_dict = {}
-    def add_adduct(self,adduct):
-        self.adduct_dict[adduct.name] = adduct
-    def get_standard_name(self,name,dialect):
-        for main_name,adduct in self.adduct_dict.items():
-            local_name = adduct.synonyms.get(dialect,None)
-            if local_name == name:
-                return main_name
-        return None
-
-def parse_csv(filename = 'Adduct definitions and synonyms - positive adducts.csv'):
-    import csv
-
-    adduct_thes = AdductThesaurus()
-
-    with open(filename,'r') as f:
-        reader = csv.reader(f)
-        top_heads = next(reader)
-        main_heads = next(reader)
-        dialect_pos = range(5,17)
-        for line in reader:
-            if len(line[0]) == 0:
-                continue # no main name
-            new_adduct = Adduct(line[0])
-            for dpos in dialect_pos:
-                if len(line[dpos]) > 0:
-                    new_adduct.add_synonym(main_heads[dpos],line[dpos])
-            adduct_thes.add_adduct(new_adduct)
-    
-    return adduct_thes
 
 
 
