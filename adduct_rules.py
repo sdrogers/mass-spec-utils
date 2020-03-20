@@ -8,6 +8,10 @@ adduct_rules = {
         'mass_transform': Formula('H').isotope.mass - ELECTRON_MASS,
         'charge': 1
     },
+    '[2M+H]+': {
+        'mass_transform': Formula('H').isotope.mass - ELECTRON_MASS,
+        'charge': 1
+    },
     '[M+2H]2+': {
         'mass_transform': 2*(Formula('H').isotope.mass - ELECTRON_MASS),
         'charge': 2
@@ -82,13 +86,24 @@ def adduct_string_parser(adduct_string):
     else:
         charge = int(charge)
 
-    adduct_info = adduct_info[2:] # strip the '[M'
-
+    
+    tokens = adduct_info.split('M')
+    m_info = tokens[0]
+    adduct_info = tokens[1]
+    
+    m_info = m_info[1:] # remove the '['
+    try:
+        mass_multiplier = int(m_info)
+    except:
+        mass_multiplier = 1
+    
     plus_pos = [('+',m.start()) for m in re.finditer("\+",adduct_info)]
     minus_pos = [('-',m.start()) for m in re.finditer("\-",adduct_info)]
     
     delim_positions = sorted(plus_pos + minus_pos,key = lambda x: x[1])
     
+
+
     mass_shift = 0
     for i,(t,d) in enumerate(delim_positions):
         if i == len(delim_positions) - 1:
@@ -124,7 +139,7 @@ def adduct_string_parser(adduct_string):
     # remove / add enough electrons
     mass_shift -= charge*ELECTRON_MASS
 
-    return (mass_shift,charge)    
+    return (mass_multiplier,mass_shift,charge)    
 
 
 if __name__ == '__main__':
