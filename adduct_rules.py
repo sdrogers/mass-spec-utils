@@ -235,4 +235,5 @@ if __name__ == '__main__':
     at = AdductTransformer()
     print(at.mass2ion(100,'[M+2H]2+'))
     print(at.mass2ion(100,'[M-2H]2-'))
+    print(at.mass2ion(120,'(M+ACN+H)+',dialect='Waters'))
     
