@@ -75,7 +75,7 @@ class AdductThesaurus(object):
 
 class AdductTransformer(object):
     def __init__(self):
-        self.adduct_thes = self.parse_csv()
+        self.adduct_thes = self._parse_csv()
     
     def mass2ion(self,mass,adduct_name,dialect = None):
         if not dialect is None:
@@ -86,7 +86,10 @@ class AdductTransformer(object):
             adduct_string = adduct_name
 
         params = adduct_string_parser(adduct_string)
-        return (mass*params[0] + params[1])/abs(params[2])
+        if params:
+            return (mass*params[0] + params[1])/abs(params[2])
+        else:
+            return None
     
     def get_transform_list(self):
         return list(self.adduct_thes.keys())
@@ -129,6 +132,12 @@ def get_negative_transform_list():
 def adduct_string_parser(adduct_string):
     # Step 1, access the charge
     
+    # initial hacky regex check
+    hit = re.search('^\[([1-9][0-9]*)?M.*\]([1-9][0-9]*)?[+-]$',adduct_string)
+    if not hit:
+        print("String didn't conform to expected format")
+        return None
+
     tokens = adduct_string.split(']')
     adduct_info = tokens[0]
     charge = tokens[1]
@@ -236,4 +245,5 @@ if __name__ == '__main__':
     print(at.mass2ion(100,'[M+2H]2+'))
     print(at.mass2ion(100,'[M-2H]2-'))
     print(at.mass2ion(120,'(M+ACN+H)+',dialect='Waters'))
+    print(at.mass2ion(120,'(M+ACN+H)+')) # throws error
     
