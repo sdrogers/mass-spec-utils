@@ -75,7 +75,8 @@ class AdductThesaurus(object):
 
 class AdductTransformer(object):
     def __init__(self):
-        self.adduct_thes = self._parse_csv()
+        self.adduct_thes = AdductThesaurus()
+        self._load_adducts()
     
     def mass2ion(self,mass,adduct_name,dialect = None):
         if not dialect is None:
@@ -91,13 +92,32 @@ class AdductTransformer(object):
         else:
             return None
     
+    def ion2mass(self,mass,adduct_name,dialect = None):
+        if not dialect is None:
+            adduct_string = self.adduct_thes.get_standard_name(adduct_name,dialect)
+            if adduct_string is None:
+                return None
+        else:
+            adduct_string = adduct_name
+        params = adduct_string_parser(adduct_string)
+        if params:
+            return (mass*abs(params[2]) - params[1])/params[0] # check this!
+        else:
+            return None
+    
     def get_transform_list(self):
         return list(self.adduct_thes.keys())
 
-    def _parse_csv(self,filename = 'Adduct definitions and synonyms - positive adducts.csv'):
+    def _load_adducts(self,positive_filename = 'adduct_csv_files/Adduct definitions and synonyms - positive adducts.csv',
+                           negative_filename = 'adduct_csv_files/Adduct definitions and synonyms - negative adducts.csv'):
+        self._parse_csv(positive_filename)
+        self._parse_csv(negative_filename)
+
+
+
+    def _parse_csv(self,filename):
         import csv
 
-        adduct_thes = AdductThesaurus()
 
         with open(filename,'r') as f:
             reader = csv.reader(f)
@@ -111,9 +131,9 @@ class AdductTransformer(object):
                 for dpos in dialect_pos:
                     if len(line[dpos]) > 0:
                         new_adduct.add_synonym(main_heads[dpos],line[dpos])
-                adduct_thes.add_adduct(new_adduct)
+                self.adduct_thes.add_adduct(new_adduct)
         
-        return adduct_thes
+        
 
     
 # obsolete methods - for deletion
@@ -246,4 +266,6 @@ if __name__ == '__main__':
     print(at.mass2ion(100,'[M-2H]2-'))
     print(at.mass2ion(120,'(M+ACN+H)+',dialect='Waters'))
     print(at.mass2ion(120,'(M+ACN+H)+')) # throws error
+    print(at.mass2ion(130,'[M-2H]2-'))
+    print(at.ion2mass(at.mass2ion(130,'[M-2H]2-'),'[M-2H]2-'))
     
