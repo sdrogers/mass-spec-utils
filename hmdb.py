@@ -7,6 +7,11 @@ from adduct_rules import AdductTransformer
 from molmass import Formula
 from spectrum import SpectralRecord
 
+# following method parses one of the hmdb metabolite (i.e. non msms) files
+# to produce a .csv file that maps HMDB accessions to chemical formulas
+# this is used when we parse msms files to assign a chemical formula, and therefore
+# a precursor mz to the spectra
+# Only need to run this once to produce the .csv...it takes a while
 def parse_metabolites_file(xml_file_name = "/Users/simon/hmdb/hmdb_metabolites.xml",output_csv = '/Users/simon/hmdb/hmdb_metabolites.csv'):
     tree = etree.parse(xml_file_name)
     root = tree.getroot()
@@ -27,7 +32,11 @@ def parse_metabolites_file(xml_file_name = "/Users/simon/hmdb/hmdb_metabolites.x
         for k,v in acc_form.items():
             writer.writerow([k,v])
     return acc_form
-        
+
+# parses an individual msms file
+# note that some have no msms peaks
+# returns the spectrum ID, the HMDB ID
+# the peaks, and the ionisation mode
 def parse_msms_file(xml_file_name):
     tree = etree.parse(xml_file_name)
     root = tree.getroot()
@@ -43,7 +52,7 @@ def parse_msms_file(xml_file_name):
             peaks.append((mz,intensity))
     return spec_id,db_id,mode,peaks
 
-
+# helper method to load the accession to formula csv
 def load_csv(csv_file):
     output_dict = {}
     with open(csv_file,'r') as f:
@@ -52,14 +61,18 @@ def load_csv(csv_file):
             output_dict[line[0]] = line[1]
     return output_dict
 
-
-def load_hmdb_msms_records(folder,accession_to_formula_file,target_mode = 'positive',transformations = ['[M+H]+']):
+# load a folder of records 
+# pass it the folder path
+# the path to the csv mentioned above
+# the target mode  ('positive','negative','both')
+# and the transformation(s) you want to apply to make
+# the precursor_mz values 
+def load_hmdb_msms_records(folder,accession_to_formula_file,target_mode = 'positive',transformations = ['[M+H]+'],records = {}):
     accession_to_formula = load_csv(accession_to_formula_file)
     xml_files = glob.glob(os.path.join(folder,'*.xml'))
     at = AdductTransformer()
     n_loaded = 0
     n_total = len(xml_files)
-    records = {}
     for xml_file in xml_files:
         spectrum_id,db_id,mode,peaks = parse_msms_file(xml_file)
         if len(peaks) == 0: # no peaks, ignore
