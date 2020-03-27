@@ -68,7 +68,6 @@ class HMDBLibrary(SpectralLibrary):
         self.sorted_record_list = self._dic2list() # sorted by precursor mz
 
 
-
 if __name__ == '__main__':
 
     # example of massbank library
