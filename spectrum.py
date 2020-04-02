@@ -6,6 +6,7 @@ import math
 class SpectralRecord(object):
     def __init__(self,precursor_mz,peaks,metadata,original_file,spectrum_id):
         self.peaks = peaks
+        self.peaks.sort(key = lambda x: x[0]) # similarity scores assume sorting by m/z
         self.spectrum_id = spectrum_id
         self.metadata = metadata
         self.original_file = original_file
