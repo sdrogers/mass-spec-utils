@@ -1,5 +1,11 @@
+import requests
+import csv
 from molmass import Formula
 import re
+
+
+
+
 
 PROTON_MASS = 1.00727645199076
 ELECTRON_MASS = Formula('H').isotope.mass - PROTON_MASS
@@ -231,6 +237,36 @@ def adduct_string_parser(adduct_string):
     return (mass_multiplier,mass_shift,charge)    
 
 
+def load_adduct_files(local_folder = None,adduct_rules = {}):
+    file_urls = ['https://raw.githubusercontent.com/michaelwitting/adductDefinitions/master/adducts_pos.txt','https://raw.githubusercontent.com/michaelwitting/adductDefinitions/master/adducts_neg.txt']
+    if local_folder:
+        files = glob.glob(os.path.join(local_folder,'*.txt'))
+    else:
+        files = None
+    if not files is None:
+        for file_name in files:
+            with open(file_name,'r') as f:
+                reader = csv.reader(f)
+                parse(reader,adduct_rules)
+    else:
+        for file_url in file_urls:
+            r = requests.get(file_url)
+            decoded_content = r.content.decode('utf-8')
+            reader = csv.reader(decoded_content.splitlines(),delimiter ='\t')
+            parse(reader,adduct_rules)
+    return adduct_rules
+
+
+def parse(csv_reader,adduct_rules):
+    heads = next(csv_reader)
+    for line in csv_reader:
+        adduct_transformation = line[0]
+        charge = int(line[1])
+        mass_add = float(line[4])
+        mass_multi = float(line[5])
+        adduct_rules[adduct_transformation] = {'mass_add':mass_add,'mass_multi':mass_multi}
+    
+
 
 if __name__ == '__main__':
     # print("E mass: ",ELECTRON_MASS)
@@ -269,3 +305,5 @@ if __name__ == '__main__':
     print(at.mass2ion(130,'[M-2H]2-'))
     print(at.ion2mass(at.mass2ion(130,'[M-2H]2-'),'[M-2H]2-'))
     
+    adduct_rules = load_adduct_files()
+    print(adduct_rules)
