@@ -9,50 +9,7 @@ import re
 
 PROTON_MASS = 1.00727645199076
 ELECTRON_MASS = Formula('H').isotope.mass - PROTON_MASS
-adduct_rules = {
-    '[M+H]+': {
-        'mass_transform': Formula('H').isotope.mass - ELECTRON_MASS,
-        'charge': 1
-    },
-    '[2M+H]+': {
-        'mass_transform': Formula('H').isotope.mass - ELECTRON_MASS,
-        'charge': 1
-    },
-    '[M+2H]2+': {
-        'mass_transform': 2*(Formula('H').isotope.mass - ELECTRON_MASS),
-        'charge': 2
-    },
-    '[M+2H+Na]3+' : {
-        'mass_transform': 2*(Formula('H').isotope.mass - ELECTRON_MASS) + 
-                          Formula('Na').isotope.mass - ELECTRON_MASS,
-        'charge': 3
-    },
-    '[M+H+Na2]3+' : { 
-        'mass_transform': (Formula('H').isotope.mass - ELECTRON_MASS) + 
-                          2*(Formula('Na').isotope.mass - ELECTRON_MASS),
-        'charge': 3
-    },
-    '[M+NH4]+' : {
-        'mass_transform': (Formula('NH4').isotope.mass - ELECTRON_MASS),
-        'charge': 1
-    },
-    '[M+H+NH4]2+': {
-        'mass_transform': (Formula('H').isotope.mass - ELECTRON_MASS) + 
-                          (Formula('NH4').isotope.mass - ELECTRON_MASS),
-        'charge': 2
-    },
 
-    # -ve from this point
-    '[M-H]-': {
-        'mass_transform': -(Formula('H').isotope.mass - ELECTRON_MASS),
-        'charge': -1
-    },
-    '[M-2H]2-': {
-        'mass_transform': -2*(Formula('H').isotope.mass - ELECTRON_MASS),
-        'charge': -2
-    }
-
-}
 
 class Adduct(object):
     def __init__(self,name):
@@ -79,11 +36,82 @@ class AdductThesaurus(object):
 
 
 
-class AdductTransformer(object):
+class AbstractAdductTransformer(object):
+    def mass2ion(self,mass,adduct_name):
+        raise NotImplementedError()
+
+    def ion2mass(self,ion_mass,adduct_name):
+        raise NotImplementedError()
+
+    def adduct_list(self,mode = 'both'):
+        raise NotImplementedError()
+
+class AdductTransformer(AbstractAdductTransformer):
+    def __init__(self,local_file_folder = None):
+        self.adduct_rules = self._load_adduct_files(local_file_folder = local_file_folder)
+
+    def adduct_list(self,mode = 'both'):
+        if mode == 'positive':
+            return [a for a,v in self.adduct_rules.items() if v['charge'] > 0]
+        elif mode == 'negative':
+            return [a for a,v in self.adduct_rules.items() if v['charge'] < 0]
+        else:
+            return list(adduct_rules.keys())
+
+    def mass2ion(self,mass,adduct_name):
+        try:
+            mass_add = self.adduct_rules[adduct_name]['mass_add']
+            mass_multi = self.adduct_rules[adduct_name]['mass_multi']
+        except:
+            print("{} not a valid adduct".format(adduct_name))
+            return None
+        return mass*mass_multi + mass_add
+
+    def ion2mass(self,ion_mass,adduct_name):
+        try:
+            mass_add = self.adduct_rules[adduct_name]['mass_add']
+            mass_multi = self.adduct_rules[adduct_name]['mass_multi']
+        except:
+            print("{} not a valid adduct".format(adduct_name))
+            return None
+        return (ion_mass - mass_add)/mass_multi
+
+    def _load_adduct_files(self,local_file_folder = None,adduct_rules = {}):
+        file_urls = ['https://raw.githubusercontent.com/michaelwitting/adductDefinitions/master/adducts_pos.txt','https://raw.githubusercontent.com/michaelwitting/adductDefinitions/master/adducts_neg.txt']
+        if local_file_folder:
+            files = glob.glob(os.path.join(local_folder,'*.txt'))
+        else:
+            files = None
+        if not files is None:
+            for file_name in files:
+                with open(file_name,'r') as f:
+                    reader = csv.reader(f)
+                    self._parse(reader,adduct_rules)
+        else:
+            for file_url in file_urls:
+                r = requests.get(file_url)
+                decoded_content = r.content.decode('utf-8')
+                reader = csv.reader(decoded_content.splitlines(),delimiter ='\t')
+                self._parse(reader,adduct_rules)
+        return adduct_rules
+
+
+    def _parse(self,csv_reader,adduct_rules):
+        heads = next(csv_reader)
+        for line in csv_reader:
+            adduct_transformation = line[0]
+            charge = int(line[1])
+            mass_add = float(line[4])
+            mass_multi = float(line[5])
+            adduct_rules[adduct_transformation] = {'mass_add':mass_add,'mass_multi':mass_multi,'charge':charge}
+        
+
+class ParsingAdductTransformer(AbstractAdductTransformer):
     def __init__(self):
         self.adduct_thes = AdductThesaurus()
         self._load_adducts()
     
+
     def mass2ion(self,mass,adduct_name,dialect = None):
         if not dialect is None:
             adduct_string = self.adduct_thes.get_standard_name(adduct_name,dialect)
@@ -237,35 +265,7 @@ def adduct_string_parser(adduct_string):
     return (mass_multiplier,mass_shift,charge)    
 
 
-def load_adduct_files(local_folder = None,adduct_rules = {}):
-    file_urls = ['https://raw.githubusercontent.com/michaelwitting/adductDefinitions/master/adducts_pos.txt','https://raw.githubusercontent.com/michaelwitting/adductDefinitions/master/adducts_neg.txt']
-    if local_folder:
-        files = glob.glob(os.path.join(local_folder,'*.txt'))
-    else:
-        files = None
-    if not files is None:
-        for file_name in files:
-            with open(file_name,'r') as f:
-                reader = csv.reader(f)
-                parse(reader,adduct_rules)
-    else:
-        for file_url in file_urls:
-            r = requests.get(file_url)
-            decoded_content = r.content.decode('utf-8')
-            reader = csv.reader(decoded_content.splitlines(),delimiter ='\t')
-            parse(reader,adduct_rules)
-    return adduct_rules
 
-
-def parse(csv_reader,adduct_rules):
-    heads = next(csv_reader)
-    for line in csv_reader:
-        adduct_transformation = line[0]
-        charge = int(line[1])
-        mass_add = float(line[4])
-        mass_multi = float(line[5])
-        adduct_rules[adduct_transformation] = {'mass_add':mass_add,'mass_multi':mass_multi}
-    
 
 
 if __name__ == '__main__':
@@ -297,7 +297,7 @@ if __name__ == '__main__':
 
     # print(adduct_thes.get_standard_name('(M+ACN+H)+','Waters'))
 
-    at = AdductTransformer()
+    at = ParsingAdductTransformer()
     print(at.mass2ion(100,'[M+2H]2+'))
     print(at.mass2ion(100,'[M-2H]2-'))
     print(at.mass2ion(120,'(M+ACN+H)+',dialect='Waters'))
@@ -305,5 +305,8 @@ if __name__ == '__main__':
     print(at.mass2ion(130,'[M-2H]2-'))
     print(at.ion2mass(at.mass2ion(130,'[M-2H]2-'),'[M-2H]2-'))
     
-    adduct_rules = load_adduct_files()
-    print(adduct_rules)
+    at2 = AdductTransformer()
+    print(at2.mass2ion(100,'[M+2H]2+'))
+    print(at2.mass2ion(100,'[M-2H]2-'))
+    print(at2.adduct_list(mode = 'negative'))
+    
