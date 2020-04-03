@@ -35,7 +35,7 @@ class Spectrum(object):
 
 class SpectralRecord(Spectrum):
     def __init__(self,precursor_mz,peaks,metadata,original_file,spectrum_id):
-        self.super().__init__(precursor_mz,peaks)
+        super().__init__(precursor_mz,peaks)
         self.spectrum_id = spectrum_id
         self.metadata = metadata
         self.original_file = original_file        
