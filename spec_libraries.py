@@ -4,6 +4,7 @@ import glob
 import math
 import random
 from massbank import load_massbank
+from gnps import load_gnps_files
 from hmdb import load_hmdb_msms_records
 from spectral_scoring_functions import cosine_similarity,modified_cosine_similarity
 
@@ -52,6 +53,12 @@ class SpectralLibrary(object):
         return hits
 
 
+class GNPSLibrary(SpectralLibrary):
+    def __init__(self,input_mgf_files):
+        super().__init__()
+        self.records = load_gnps_files(input_mgf_files)
+        self.sorted_record_list = self._dic2list()
+
 class MassBankLibrary(SpectralLibrary):
     def __init__(self,mb_dir = '/Users/simon/git/MassBank-data/'):
         super().__init__()
@@ -70,21 +77,30 @@ class HMDBLibrary(SpectralLibrary):
 
 if __name__ == '__main__':
 
-    # example of massbank library
-    mbl = MassBankLibrary()
+    # # example of massbank library
+    # mbl = MassBankLibrary()
 
-    record_list = list(mbl.records.values())
+    # record_list = list(mbl.records.values())
+    # a = random.randrange(len(record_list))
+    # example_spectrum = record_list[a]
+
+    # hits = mbl.spectral_match(example_spectrum,score_thresh = 0.5)
+    # print(example_spectrum)
+    # for hit in hits:
+    #     print(hit)
+
+    # # example of HMDB
+    # hmdbl = HMDBLibrary()
+    
+    # hits = hmdbl.spectral_match(example_spectrum,score_thresh = 0.5)
+    # for hit in hits:
+    #     print(hit)
+
+    # example og GNPS
+    gl = GNPSLibrary(['/Users/simon/git/molnet/lib/matched_mibig_gnps_update.mgf'])
+    record_list = list(gl.records.values())
     a = random.randrange(len(record_list))
     example_spectrum = record_list[a]
-
-    hits = mbl.spectral_match(example_spectrum,score_thresh = 0.5)
-    print(example_spectrum)
-    for hit in hits:
-        print(hit)
-
-    # example of HMDB
-    hmdbl = HMDBLibrary()
-    
-    hits = hmdbl.spectral_match(example_spectrum,score_thresh = 0.5)
+    hits = gl.spectral_match(example_spectrum,score_thresh = 0.5)
     for hit in hits:
         print(hit)
