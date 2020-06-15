@@ -148,8 +148,11 @@ class ParsingAdductTransformer(AbstractAdductTransformer):
 
     def _load_adducts(self,positive_filename = 'adduct_csv_files/Adduct definitions and synonyms - positive adducts.csv',
                            negative_filename = 'adduct_csv_files/Adduct definitions and synonyms - negative adducts.csv'):
-        self._parse_csv(positive_filename)
-        self._parse_csv(negative_filename)
+        try:
+            self._parse_csv(positive_filename)
+            self._parse_csv(negative_filename)
+        except:
+            print("Failed to load .csv files. Assuming normal dialect.")
 
 
 
