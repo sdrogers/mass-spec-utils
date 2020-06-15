@@ -72,8 +72,10 @@ class AdductTransformer(AbstractAdductTransformer):
             mass_add = self.adduct_rules[adduct_name]['mass_add']
             mass_multi = self.adduct_rules[adduct_name]['mass_multi']
         except:
-            print("{} not a valid adduct".format(adduct_name))
-            return None
+            print("{} not a valid adduct, trying to parse".format(adduct_name))
+            pa = ParsingAdductTransformer()
+            return pa.ion2mass(adduct_name)
+            # return None
         return (ion_mass - mass_add)/mass_multi
 
     def _load_adduct_files(self,local_file_folder = None,adduct_rules = {}):
