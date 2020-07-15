@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="mass-spec-utils", # Replace with your own username
-    version="0.0.1",
+    name="mass_spec_utils", # Replace with your own username
+    version="0.0.3",
     author="Simon Rogers",
     author_email="simon.d.rogers@gmail.com",
     description="Some useful MS code",
@@ -19,4 +19,10 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
+    install_requires = [
+    	'pymzml',
+    	'molmass',
+    	'numpy',
+    	'requests',
+    ],
 )
