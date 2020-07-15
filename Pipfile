@@ -11,6 +11,8 @@ sortedcontainers = "*"
 lxml = "*"
 requests = "*"
 pytest = "*"
+pymzml = "*"
+twine = "*"
 
 [requires]
 python_version = "3.7"
