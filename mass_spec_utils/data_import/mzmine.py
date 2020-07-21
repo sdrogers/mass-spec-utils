@@ -71,17 +71,17 @@ def load_picked_boxes(csv_name):
     return boxes
 
 
-def map_boxes_to_scans(mzml_file,boxes,half_isolation_window = 0.75,allow_last_overlap = False):
+def map_boxes_to_scans(mzml_file,boxes,half_isolation_window = 0.75,allow_last_overlap = False, scan_shift_seconds = 0):
     scans2boxes = {}
     boxes2scans = {}
     for scan in mzml_file.scans:
         if scan.ms_level == 1:
             continue
-        rt = scan.rt_in_minutes
+        rt = scan.rt_in_minutes + scan_shift_seconds/60.
         if allow_last_overlap:
             previous_ms1 = scan.previous_ms1
             if previous_ms1:
-                rt = previous_ms1.rt_in_minutes
+                rt = previous_ms1.rt_in_minutes + scan_shift_seconds/60.
         min_mz = scan.precursor_mz - half_isolation_window
         max_mz = scan.precursor_mz + half_isolation_window
         sub_boxes = list(filter(lambda x: 
