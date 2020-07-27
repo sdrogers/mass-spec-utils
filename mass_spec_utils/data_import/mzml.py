@@ -2,6 +2,15 @@ import numpy as np
 import pymzml
 import bisect
 
+EFFECTIVELY_INFINITE = 1e6
+
+class MZPeak(object):
+    def __init__(self,mz,intensity,scan):
+        self.mz = mz
+        self.intensity = intensity
+        self.scan = scan
+
+
 class MZMLScan(object):
     def __init__(self,scan_no,source_file,ms_level,peaks,rt_in_minutes,precursor_mz = None):
         self.scan_no = scan_no
@@ -76,6 +85,19 @@ class MZMLScan(object):
 
         return inte
 
+    def get_max_intensity(self, mz_min=0, mz_max=EFFECTIVELY_INFINITE):
+        filtered_peaks = list(filter(lambda x: x[0] >= mz_min and x[0] <= mz_max,self.peaks))
+        if len(filtered_peaks) == 0:
+            return None
+        else:
+            mz,intensity = zip(*filtered_peaks)
+            max_pos = np.argmax(np.array(intensity))
+            new_peak = MZPeak(mz[max_pos],intensity[max_pos],self)
+            return new_peak
+
+
+
+
 def filter_spectrum(spectrum,min_intensity = 5e3):
     new_peaks = list(filter(lambda x: x[1]>=min_intensity,spectrum.peaks))
     spectrum.peaks = new_peaks
@@ -138,3 +160,18 @@ class MZMLFile(object):
                               ms_level,peaks,rt,precursor_mz))
             scan_no += 1
         print("Loaded {} scans".format(scan_no))
+    
+    def get_max_intensity(self,rt_min_seconds=0,
+                               rt_max_seconds=EFFECTIVELY_INFINITE,
+                               mz_min=0,mz_max=EFFECTIVELY_INFINITE):
+        filtered_scans = list(filter(lambda x: x.rt_in_seconds >= rt_min_seconds and x.rt_in_seconds <= rt_max_seconds,self.scans))
+        best_peak = None
+        for scan in filtered_scans:
+            max_peak = scan.get_max_intensity(mz_min=mz_min, mz_max=mz_max)
+            if max_peak is not None:
+                if best_peak is None:
+                    best_peak = max_peak
+                else:
+                    if max_peak.intensity > best_peak.intensity:
+                        best_peak = max_peak
+        return best_peak.mz,best_peak.scan.rt_in_seconds,best_peak.intensity
