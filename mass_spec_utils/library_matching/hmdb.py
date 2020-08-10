@@ -3,9 +3,9 @@ from lxml import etree
 import csv
 import glob
 import os
-from adduct_rules import AdductTransformer
+from ..adduct_calculator.adduct_rules import AdductTransformer
 from molmass import Formula
-from spectrum import SpectralRecord
+from .spectrum import SpectralRecord
 
 # following method parses one of the hmdb metabolite (i.e. non msms) files
 # to produce a .csv file that maps HMDB accessions to chemical formulas

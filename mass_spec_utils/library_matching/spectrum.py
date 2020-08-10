@@ -12,7 +12,7 @@ class Spectrum(object):
         self.n_peaks = len(self.peaks)
     
     def __str__(self):
-        return srt(self.precursor_mz)
+        return str(self.precursor_mz)
 
     def __repr__(self):
         return self.__str__()

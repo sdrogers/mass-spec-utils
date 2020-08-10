@@ -1,5 +1,5 @@
 # gnps.py
-from spectrum import SpectralRecord
+from .spectrum import SpectralRecord
 def load_gnps_files(file_list):
     if type(file_list) == str:
         file_list = [file_list]
