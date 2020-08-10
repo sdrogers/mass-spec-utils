@@ -3,10 +3,10 @@ import os
 import glob
 import math
 import random
-from massbank import load_massbank
-from gnps import load_gnps_files
-from hmdb import load_hmdb_msms_records
-from spectral_scoring_functions import cosine_similarity,modified_cosine_similarity
+from .massbank import load_massbank
+from .gnps import load_gnps_files
+from .hmdb import load_hmdb_msms_records
+from .spectral_scoring_functions import cosine_similarity,modified_cosine_similarity
 
 
 class SpectralLibrary(object):
