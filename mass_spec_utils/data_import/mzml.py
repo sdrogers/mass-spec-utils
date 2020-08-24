@@ -153,7 +153,10 @@ class MZMLFile(object):
             ms_level = scan.ms_level
             peaks = scan.peaks('centroided')
             if ms_level == 2:
-                precursor_mz = scan.selected_precursors[0]['mz']
+                try:
+                    precursor_mz = scan.selected_precursors[0]['mz']
+                except:
+                    precursot_mz = None
             else:
                 precursor_mz = None
             self.scans.append(MZMLScan(scan_no,self.file_name,
