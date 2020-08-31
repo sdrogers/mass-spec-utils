@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mass_spec_utils", # Replace with your own username
-    version="0.0.8",
+    version="0.0.10",
     author="Simon Rogers",
     author_email="simon.d.rogers@gmail.com",
     description="Some useful MS code",

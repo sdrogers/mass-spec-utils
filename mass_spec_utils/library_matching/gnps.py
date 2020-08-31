@@ -38,7 +38,7 @@ def load_mgf(mgf_name,id_field = 'SCANS',spectra = {}):
             elif len(line.split('=')) > 1:
                 # it is a metadata line
                 tokens = line.split('=')
-                current_metadata[tokens[0]] = tokens[1]
+                current_metadata[tokens[0]] = "=".join(tokens[1:])
             elif not line.startswith('END IONS'):
                 # it's a peak
                 tokens = line.split()
