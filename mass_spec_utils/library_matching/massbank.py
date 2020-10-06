@@ -7,7 +7,7 @@ import sys
 from .spectrum import SpectralRecord
 
 def parse_mb_file(file_name):
-    with open(file_name,'r') as f:
+    with open(file_name,'r', encoding="utf8", errors="ignore") as f:
         in_peaks = False
         peaks = []
         metadata = {}
