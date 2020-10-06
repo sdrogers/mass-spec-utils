@@ -16,6 +16,7 @@ def parse_mb_file(file_name):
         precursor_type = None
         smiles = None
         iupac = None
+        inchikey = None
         for line in f:
             if len(line) == 0:
                 continue
@@ -50,6 +51,8 @@ def parse_mb_file(file_name):
             if line.startswith('CH$IUPAC'):
                 iupac = line.split()[-1]
                 continue
+            if line.startswith('CH$LINK: INCHIKEY'):
+                inchikey = line.split()[-1]
             if in_peaks:
                 if line.startswith('//'):
                     in_peaks = False
@@ -61,6 +64,7 @@ def parse_mb_file(file_name):
         metadata['smiles'] = smiles
         metadata['iupac'] = iupac
         metadata['names'] = names
+        metadata['inchikey'] = inchikey
         spectrum_id = file_name.split(os.sep)[-1].split('.')[0]
         record = SpectralRecord(precursor_mz,peaks,metadata,file_name,spectrum_id)
 
