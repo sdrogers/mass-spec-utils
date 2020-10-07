@@ -4,7 +4,7 @@ import os
 import numpy as np
 from loguru import logger
 
-from .mzmine import load_picked_boxes
+from ..data_import.mzmine import load_picked_boxes
 
 class Peak(object): # todo: add MS2 information
     def __init__(self,mz,rt,intensity,source_file,source_id):
