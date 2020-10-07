@@ -1,5 +1,6 @@
 # gnps.py
 from .spectrum import SpectralRecord
+from loguru import logger
 def load_gnps_files(file_list):
     if type(file_list) == str:
         file_list = [file_list]
@@ -9,7 +10,9 @@ def load_gnps_files(file_list):
     return spectra
 
 
-def load_mgf(mgf_name,id_field = 'SCANS',spectra = {}):
+def load_mgf(mgf_name,id_field = 'SCANS',spectra = None):
+    if spectra is None:
+        spectra = {}
     with open(mgf_name,'r') as f:
         current_metadata = {'filename':mgf_name}
         current_peaks = []
@@ -32,7 +35,7 @@ def load_mgf(mgf_name,id_field = 'SCANS',spectra = {}):
                         spectrum = SpectralRecord(float(current_metadata['PEPMASS']),current_peaks,current_metadata,mgf_name,id_val)
                         spectra[id_val] = spectrum
                         if len(spectra)%100 == 0:
-                            print("Loaded {} spectra".format(len(spectra)))
+                            logger.debug("Loaded {} spectra".format(len(spectra)))
                 current_metadata = {'filename':mgf_name}
                 current_peaks = []
             elif len(line.split('=')) > 1:
