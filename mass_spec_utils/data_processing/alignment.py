@@ -2,6 +2,9 @@
 import csv
 import os
 import numpy as np
+from loguru import logger
+
+from .mzmine import load_picked_boxes
 
 class Peak(object): # todo: add MS2 information
     def __init__(self,mz,rt,intensity,source_file,source_id):
@@ -162,7 +165,6 @@ class BoxJoinAligner(JoinAligner):
         self.peaksets2boxes = {}
 
     def add_file(self,input_csv,input_mgf=None):
-        from ms2_matching import load_picked_boxes
         with open(input_csv,'r') as f:
             reader =  csv.reader(f)
             heads = next(reader)

@@ -13,6 +13,7 @@ requests = "*"
 pytest = "*"
 pymzml = "*"
 twine = "*"
+loguru = "*"
 
 [requires]
 python_version = "3.7"

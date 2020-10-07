@@ -1,6 +1,7 @@
 import numpy as np
 import pymzml
 import bisect
+from loguru import logger
 
 EFFECTIVELY_INFINITE = 1e6
 
@@ -71,7 +72,7 @@ class MZMLScan(object):
         if ppm_err <= max_error:
             return (mz[pos],intensity[pos])
         else:
-            print("Can't find peak within {} ppm, closest = {}".format(max_error,ppm_err))
+            logger.debug("Can't find peak within {} ppm, closest = {}".format(max_error,ppm_err))
             return None
 
     def get_intensity(self,query_mz,dp = 2):
@@ -162,7 +163,7 @@ class MZMLFile(object):
             self.scans.append(MZMLScan(scan_no,self.file_name,
                               ms_level,peaks,rt,precursor_mz))
             scan_no += 1
-        print("Loaded {} scans".format(scan_no))
+        logger.debug("Loaded {} scans".format(scan_no))
     
     def get_max_intensity(self,rt_min_seconds=0,
                                rt_max_seconds=EFFECTIVELY_INFINITE,

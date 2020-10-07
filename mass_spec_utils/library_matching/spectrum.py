@@ -41,9 +41,12 @@ class SpectralRecord(Spectrum):
         self.original_file = original_file        
 
     def __str__(self):
-        if 'names' in self.metadata:
-            names = self.metadata['names'][0]
-        else:
-            names = ""
-        return ", ".join([self.spectrum_id,names,str(self.precursor_mz),self.original_file])
+        try:
+            if 'names' in self.metadata:
+                names = self.metadata['names'][0]
+            else:
+                names = ""
+            return ", ".join([self.spectrum_id,names,str(self.precursor_mz),self.original_file])
+        except:
+            return self.spectrum_id
 
