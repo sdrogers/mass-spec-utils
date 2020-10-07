@@ -17,6 +17,7 @@ def parse_mb_file(file_name):
         smiles = None
         iupac = None
         inchikey = None
+        polarity = None
         for line in f:
             if len(line) == 0:
                 continue
@@ -42,6 +43,9 @@ def parse_mb_file(file_name):
                     precursor_type = precursor_type_string
 
                 continue
+            if line.startswith('AC$MASS_SPECTROMETRY: ION_MODE'):
+                polarity = line.split()[-1]
+                continue
             if line.startswith('CH$NAME'):
                 names.append(' '.join(line.split(':')[1:]))
                 continue
@@ -65,6 +69,7 @@ def parse_mb_file(file_name):
         metadata['iupac'] = iupac
         metadata['names'] = names
         metadata['inchikey'] = inchikey
+        metadata['polarity'] = polarity
         spectrum_id = file_name.split(os.sep)[-1].split('.')[0]
         record = SpectralRecord(precursor_mz,peaks,metadata,file_name,spectrum_id)
 

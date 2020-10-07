@@ -60,9 +60,15 @@ class GNPSLibrary(SpectralLibrary):
         self.sorted_record_list = self._dic2list()
 
 class MassBankLibrary(SpectralLibrary):
-    def __init__(self,mb_dir = '/Users/simon/git/MassBank-data/'):
+    def __init__(self,mb_dir = '/Users/simon/git/MassBank-data/', polarity='all'):
         super().__init__()
         self.records = load_massbank(mb_dir = mb_dir)
+        if not polarity == 'all':
+            new_records = {}
+            for sid, spec in self.records.items():
+                if spec.metadata['polarity'] == polarity:
+                    new_records[sid] = spec
+            self.records = new_records
         self.sorted_record_list = self._dic2list() # sorted by precursor mz
 
 class HMDBLibrary(SpectralLibrary):
